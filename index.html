@@ -758,45 +758,44 @@ async function fetchLiveMatches() {
     
     const data = await res.json();
     
+    // Verificamos si la respuesta es válida y tiene partidos
     if (data && data.response && data.response.length > 0) {
-      // Tomamos los partidos, ordenándolos para que los "en vivo" salgan primero
       MATCHES = data.response
         .map(item => ({
           teamA: item.teams.home.name,
           teamB: item.teams.away.name,
           scoreA: item.goals.home ?? 0,
           scoreB: item.goals.away ?? 0,
-          // Lógica de estado mejorada
-          status: item.fixture.status.short === '1H' || item.fixture.status.short === '2H' ? 'live' : 
+          status: (item.fixture.status.short === '1H' || item.fixture.status.short === '2H') ? 'live' : 
                   (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
           minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
           stadium: item.fixture.venue.name || "Por definir",
           city: item.fixture.venue.city || "",
           date: new Date(item.fixture.date).toLocaleDateString()
         }))
-        // Orden: Primero los vivos, luego los terminados, luego los futuros
         .sort((a, b) => {
           const order = { 'live': 1, 'finalizado': 2, 'pronto': 3 };
           return order[a.status] - order[b.status];
         });
     } else {
-        throw new Error("No hay datos de partidos");
+      throw new Error("Respuesta vacía de la API");
     }
   } catch (err) {
-    console.warn("No se pudo conectar a la API o no hay partidos del Mundial hoy. Usando datos de prueba.");
+    console.warn("Usando datos de prueba locales debido a:", err.message);
     
-    // Fallback: Datos falsos de "prueba" para que tu diseño no se quede vacío
+    // Fallback: Datos falsos siempre activos si la API falla o no hay partidos
     MATCHES = [
       { teamA: "España", teamB: "Brasil", scoreA: 2, scoreB: 1, status: "live", minute: "74", stadium: "Miami Gardens", city: "Miami", date: "27/06/2026", group: "Grupo E" },
       { teamA: "Francia", teamB: "Argentina", scoreA: 0, scoreB: 0, status: "pronto", time: "21:00", stadium: "MetLife Stadium", city: "Nueva York", date: "27/06/2026", group: "Grupo F" },
       { teamA: "México", teamB: "Alemania", scoreA: 1, scoreB: 3, status: "finalizado", stadium: "Estadio Azteca", city: "CDMX", date: "27/06/2026", group: "Grupo A" }
     ];
- } finally {
+  } finally {
+    // Renderizado de la UI
     renderScoreboard();
     renderFeaturedMatches();
     renderTicker();
-  }
-}
+    
+    // Actualizar el texto de "Última actualización"
     const statusEl = document.getElementById('liveStatus');
     if(statusEl) {
       statusEl.innerHTML = `<span style="color:var(--c-pitch-bright)">●</span> Actualizado ${new Date().toLocaleTimeString()}`;
