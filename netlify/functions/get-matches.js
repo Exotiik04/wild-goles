@@ -6,7 +6,7 @@ exports.handler = async (event, context) => {
   // Usamos league=1 (World Cup) y season=2026.
   // live=all traerá solo los partidos en juego. 
   // Si quieres todos los partidos de la fecha, quita "&live=all"
-  const url = `https://v3.football.api-sports.io/fixtures?league=1&season=2026&live=all`;
+  const url = `https://v3.football.api-sports.io/`;
 
   const headers = {
     "Content-Type": "application/json",
