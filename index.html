@@ -697,36 +697,69 @@ footer{ background: var(--c-bg-soft); border-top:1px solid var(--c-line); paddin
 <script>
 
 /* ====================================================================
-   LÓGICA DE DATOS (Conexión con Netlify)
+   CONFIG API NETLIFY
    ==================================================================== */
-let MATCHES = []; // Variable global donde guardaremos los partidos
+const API_URL = window.location.hostname.includes("localhost")
+  ? "http://localhost:8888/.netlify/functions/get-matches"
+  : "/.netlify/functions/get-matches";
+
+/* ====================================================================
+   LÓGICA DE DATOS
+   ==================================================================== */
+let MATCHES = [];
 
 async function fetchLiveMatches() {
   try {
-    const res = await fetch("/.netlify/functions/get-matches");
-    if (!res.ok) throw new Error("Error en servidor");
-    
-    const data = await res.json();
-    
-    if (data && data.summaries) {
-      MATCHES = data.summaries.map(item => ({
-        teamA: item.sport_event.competitors.find(c => c.qualifier === 'home').name,
-        teamB: item.sport_event.competitors.find(c => c.qualifier === 'away').name,
-        scoreA: item.sport_event_status.home_score || 0,
-        scoreB: item.sport_event_status.away_score || 0,
-        status: item.sport_event_status.status === 'live' ? 'live' : 'finalizado',
-        minute: item.sport_event_status.clock?.match_time || ''
-      }));
-      
-      // Actualizamos la interfaz
-      renderScoreboard();
+    const res = await fetch(API_URL, {
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
     }
+
+    const data = await res.json();
+
+    if (!data || !data.summaries) {
+      console.warn("Respuesta sin summaries:", data);
+      MATCHES = [];
+      renderScoreboard();
+      return;
+    }
+
+    MATCHES = data.summaries.map(item => {
+      const home = item?.sport_event?.competitors?.find(c => c.qualifier === 'home');
+      const away = item?.sport_event?.competitors?.find(c => c.qualifier === 'away');
+
+      const statusRaw = item?.sport_event_status?.status;
+
+      return {
+        teamA: home?.name || "Equipo A",
+        teamB: away?.name || "Equipo B",
+        scoreA: item?.sport_event_status?.home_score ?? 0,
+        scoreB: item?.sport_event_status?.away_score ?? 0,
+        status:
+          statusRaw === "live"
+            ? "live"
+            : statusRaw === "finished"
+              ? "finalizado"
+              : "pronto",
+        minute: item?.sport_event_status?.clock?.match_time || ""
+      };
+    });
+
+    renderScoreboard();
+
   } catch (err) {
     console.warn("No se pudo conectar a la API:", err);
+    MATCHES = [];
+    renderScoreboard();
   }
 }
+
 /* ====================================================================
-   RENDER HELPERS
+   RENDER HELPERS (sin cambios críticos)
    ==================================================================== */
 function statusPillHTML(status, minute){
   if(status === "live") return `<span class="status-pill status-live"><span class="pulse-sm"></span> EN VIVO · ${minute}'</span>`;
@@ -738,318 +771,99 @@ function matchCardHTML(m){
   const fA = m.flagA || flag(m.teamA);
   const fB = m.flagB || flag(m.teamB);
   const topLeft = m.group || m.date || "";
+
   return `
   <div class="card match-card">
     <div class="m-top"><span>${topLeft}</span>${statusPillHTML(m.status, m.minute)}</div>
+
     <div class="m-teams">
       <div class="m-team"><span class="flag">${fA}</span><span class="tname">${m.teamA}</span></div>
-      <div class="m-score">${m.status==='pronto' ? (m.time||'--') : `<span>${m.scoreA}</span><span class="sep">:</span><span>${m.scoreB}</span>`}</div>
+
+      <div class="m-score">
+        ${m.status === 'pronto'
+          ? (m.time || '--')
+          : `<span>${m.scoreA}</span><span class="sep">:</span><span>${m.scoreB}</span>`
+        }
+      </div>
+
       <div class="m-team"><span class="flag">${fB}</span><span class="tname">${m.teamB}</span></div>
     </div>
-    <div class="m-meta"><span>${m.stadium||''}</span><span>${m.city||m.date||''}</span></div>
+
+    <div class="m-meta"><span>${m.stadium || ''}</span><span>${m.city || m.date || ''}</span></div>
   </div>`;
-}
-
-function renderFeaturedMatches(){
-  if(!MATCHES.length){
-    document.getElementById('featuredMatches').innerHTML=`<div class="no-results" style="grid-column:1/-1"><div class="big-emoji">⏳</div>Cargando partidos…</div>`;
-    return;
-  }
-  const featured = [...MATCHES].sort((a,b)=>{
-    const order = {live:0, pronto:1, finalizado:2};
-    return (order[a.status]||2)-(order[b.status]||2);
-  }).slice(0,3);
-  document.getElementById('featuredMatches').innerHTML = featured.map(matchCardHTML).join('');
-}
-
-function newsThumbBgStyle(cat){
-  const color = CAT_COLORS[cat] || "#15803d";
-  return `background: linear-gradient(160deg, ${color}cc, #07100fcc), repeating-linear-gradient(115deg, rgba(255,255,255,.08) 0 10px, transparent 10px 22px); background-color:${color};`;
-}
-
-function renderFeaturedNews(){
-  const items = NEWS.filter(n=>n.featured);
-  const big = items.find(n=>n.big) || items[0];
-  const rest = items.filter(n=>n!==big);
-  const bigHTML = `
-    <div class="card news-card big">
-      <div class="thumb" style="${newsThumbBgStyle(big.cat)}">
-        <span class="cat-tag">${big.cat}</span>
-      </div>
-      <div class="body">
-        <h3>${big.title}</h3>
-        <p class="excerpt">${big.excerpt}</p>
-        <div class="meta"><span>Wild Goles</span><span>${big.date}</span></div>
-      </div>
-    </div>`;
-  const listHTML = `<div class="news-list-row">` + rest.map(n=>`
-      <div class="card news-list-item">
-        <div class="thumb-sm" style="${newsThumbBgStyle(n.cat)}">${n.cat.slice(0,2).toUpperCase()}</div>
-        <div class="body">
-          <span class="eyebrow" style="margin-bottom:2px;">${n.cat}</span>
-          <h3>${n.title}</h3>
-          <div class="meta"><span>${n.date}</span></div>
-        </div>
-      </div>`).join('') + `</div>`;
-  document.getElementById('featuredNews').innerHTML = bigHTML + listHTML;
-}
-
-let activeCategory = "Todas";
-function renderCatFilters(){
-  document.getElementById('catFilters').innerHTML = CATEGORIES.map(c=>
-    `<button class="cat-chip ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>`
-  ).join('');
-  document.querySelectorAll('.cat-chip').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      activeCategory = btn.dataset.cat;
-      renderCatFilters();
-      renderNewsGrid();
-    });
-  });
-}
-
-function renderNewsGrid(){
-  const list = activeCategory === "Todas" ? NEWS : NEWS.filter(n=>n.cat===activeCategory);
-  document.getElementById('newsGrid').innerHTML = list.map(n=>`
-    <div class="card news-card">
-      <div class="thumb" style="${newsThumbBgStyle(n.cat)}"><span class="cat-tag">${n.cat}</span></div>
-      <div class="body">
-        <h3>${n.title}</h3>
-        <p class="excerpt">${n.excerpt}</p>
-        <div class="meta"><span>Wild Goles</span><span>${n.date}</span></div>
-      </div>
-    </div>`).join('') || `<div class="no-results"><div class="big-emoji">📰</div>No hay noticias en esta categoría todavía.</div>`;
-}
-
-function renderFormatTimeline(){
-  document.getElementById('formatTimeline').innerHTML = FORMAT_STAGES.map(s=>`
-    <div class="card stage-card">
-      <span class="num">${s.n}</span>
-      <h4>${s.t}</h4>
-      <p>${s.d}</p>
-    </div>`).join('');
-}
-
-function renderHostGrid(){
-  document.getElementById('hostGrid').innerHTML = HOSTS.map(h=>`
-    <div class="card host-card">
-      <span class="flagbig">${h.flag}</span>
-      <h3>${h.country}</h3>
-      <span class="count">${h.count}</span>
-      <div class="city-tags">${h.cities.map(c=>`<span>${c}</span>`).join('')}</div>
-    </div>`).join('');
-}
-
-function renderCalendar(){
-  document.getElementById('calendarRail').innerHTML = CALENDAR.map(c=>`
-    <div class="cal-row">
-      <span class="date mono">${c.date}</span>
-      <h4>${c.title}</h4>
-      <p>${c.desc}</p>
-    </div>`).join('');
-}
-
-function initials(name){ return name.split(' ').map(p=>p[0]).slice(0,2).join(''); }
-function avatarColor(name){
-  const colors = ["#15803d","#1d4ed8","#b3121f","#a855f7","#b45309","#0e7490"];
-  let h=0; for(const c of name) h+=c.charCodeAt(0);
-  return colors[h % colors.length];
-}
-function statusLabel(s){ return s==='apto' ? 'Apto' : s==='duda' ? 'Duda' : 'Lesionado'; }
-
-function playerCardHTML(p){
-  return `
-  <div class="card player-card">
-    <div class="player-avatar" style="background:${avatarColor(p.name)}">${initials(p.name)}</div>
-    <div>
-      <div class="player-name">${p.name}</div>
-      <div class="player-sub">${flag(p.country)} ${p.country}</div>
-    </div>
-    <div class="player-badges">
-      <span class="tag-pos">${p.position}</span>
-      <span class="status-dot-wrap st-${p.status}"><span class="status-dot"></span>${statusLabel(p.status)}</span>
-    </div>
-  </div>`;
-}
-
-function populatePlayerFilters(){
-  const countrySel = document.getElementById('filterCountry');
-  const posSel = document.getElementById('filterPosition');
-  [...new Set(PLAYERS.map(p=>p.country))].sort().forEach(c=>{
-    countrySel.insertAdjacentHTML('beforeend', `<option value="${c}">${flag(c)} ${c}</option>`);
-  });
-  [...new Set(PLAYERS.map(p=>p.position))].forEach(pos=>{
-    posSel.insertAdjacentHTML('beforeend', `<option value="${pos}">${pos}</option>`);
-  });
-}
-
-function renderPlayers(){
-  const q = document.getElementById('playerSearch').value.trim().toLowerCase();
-  const country = document.getElementById('filterCountry').value;
-  const position = document.getElementById('filterPosition').value;
-  const status = document.getElementById('filterStatus').value;
-
-  const filtered = PLAYERS.filter(p=>{
-    return (!q || p.name.toLowerCase().includes(q))
-      && (!country || p.country===country)
-      && (!position || p.position===position)
-      && (!status || p.status===status);
-  });
-
-  document.getElementById('playersCount').textContent = `${filtered.length} jugador${filtered.length===1?'':'es'} encontrados`;
-  document.getElementById('playersGrid').innerHTML = filtered.map(playerCardHTML).join('')
-    || `<div class="no-results"><div class="big-emoji">🔍</div>No encontramos jugadores con esos filtros.</div>`;
-}
-
-function renderScoreboard(){
-  const live = MATCHES.filter(m=>m.status==='live');
-  const others = MATCHES.filter(m=>m.status!=='live').slice(0, Math.max(4, 8) - live.length);
-  const list = [...live, ...others].slice(0,8);
-  if(!list.length){
-    document.getElementById('scoreboardGrid').innerHTML=`<div class="no-results" style="grid-column:1/-1"><div class="big-emoji">⏳</div>Cargando marcadores en vivo…</div>`;
-    return;
-  }
-  document.getElementById('scoreboardGrid').innerHTML = list.map(m=>{
-    const fA = m.flagA || flag(m.teamA);
-    const fB = m.flagB || flag(m.teamB);
-    return `
-    <div class="score-panel">
-      <div class="sp-head">
-        <span>${m.group||m.date||'Mundial 2026'} · ${m.stadium||m.city||''}</span>
-        ${m.status==='live' ? `<span class="live-tag"><span class="pulse-sm"></span> EN VIVO</span>` : `<span>${m.status==='pronto' ? 'POR JUGARSE' : 'FINAL'}</span>`}
-      </div>
-      <div class="sp-body">
-        <div class="sp-team"><span class="flag">${fA}</span><span class="tname">${m.teamA}</span></div>
-        <div class="sp-center">
-          <div class="sp-score">${m.status==='pronto' ? (m.time||'--:--') : `${m.scoreA} – ${m.scoreB}`}</div>
-          ${m.status==='live' && m.minute ? `<span class="sp-min">${m.minute}′</span>` : ''}
-        </div>
-        <div class="sp-team"><span class="flag">${fB}</span><span class="tname">${m.teamB}</span></div>
-      </div>
-      <div class="sp-foot"><span>${m.city||m.date||''}</span><span>Mundial 2026</span></div>
-    </div>`;
-  }).join('');
-}
-
-function renderTicker(){
-  if(!MATCHES.length) return;
-  const items = MATCHES.map(m=>{
-    const fA = m.flagA || flag(m.teamA);
-    const fB = m.flagB || flag(m.teamB);
-    const score = m.status==='pronto' ? (m.time||'') : `${m.scoreA}-${m.scoreB}`;
-    return `<span class="ticker-item">${m.status==='live' ? '<span class="live-chip">LIVE</span>' : ''}<span class="dot"></span>${fA} ${m.teamA} ${score} ${m.teamB} ${fB}</span>`;
-  }).join('');
-  document.getElementById('tickerTrack').innerHTML = items + items;
 }
 
 /* ====================================================================
-   INTERACTIONS
+   SCOREBOARD (más estable)
    ==================================================================== */
-function setupNav(){
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', ()=>{
-    navbar.classList.toggle('scrolled', window.scrollY > 12);
-  });
+function renderScoreboard(){
+  const grid = document.getElementById('scoreboardGrid');
+  if (!grid) return;
 
-  const navToggle = document.getElementById('navToggle');
-  const navLinks = document.getElementById('navLinks');
-  navToggle.addEventListener('click', ()=> navLinks.classList.toggle('open'));
-  document.querySelectorAll('[data-link]').forEach(link=>{
-    link.addEventListener('click', ()=>{
-      navLinks.classList.remove('open');
-      document.querySelectorAll('[data-link]').forEach(l=>l.classList.remove('active'));
-      link.classList.add('active');
-    });
-  });
+  if (!MATCHES.length) {
+    grid.innerHTML = `
+      <div class="no-results" style="grid-column:1/-1">
+        <div class="big-emoji">⏳</div>
+        Cargando marcadores en vivo…
+      </div>`;
+    return;
+  }
 
-  // scrollspy
-  const sections = ['inicio','mundial','jugadores','noticias','envivo'].map(id=>document.getElementById(id));
-  const links = document.querySelectorAll('[data-link]');
-  const obs = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        links.forEach(l=>l.classList.toggle('active', l.getAttribute('href') === '#'+entry.target.id));
-      }
-    });
-  }, { rootMargin: '-45% 0px -50% 0px' });
-  sections.forEach(s=> s && obs.observe(s));
-}
+  const live = MATCHES.filter(m => m.status === 'live');
+  const others = MATCHES.filter(m => m.status !== 'live');
 
-function setupTheme(){
-  const btn = document.getElementById('themeToggle');
-  btn.addEventListener('click', ()=>{
-    const html = document.documentElement;
-    html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
-  });
-}
+  const list = [...live, ...others].slice(0, 8);
 
-function setupSearch(){
-  const toggle = document.getElementById('searchToggle');
-  const pop = document.getElementById('searchPop');
-  const input = document.getElementById('globalSearch');
-  toggle.addEventListener('click', ()=>{
-    pop.classList.toggle('open');
-    if(pop.classList.contains('open')) setTimeout(()=>input.focus(),100);
-  });
-  document.addEventListener('click', (e)=>{
-    if(!pop.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)){
-      pop.classList.remove('open');
-    }
-  });
-  input.addEventListener('input', ()=>{
-    document.getElementById('playerSearch').value = input.value;
-    renderPlayers();
-    if(input.value.trim().length>0){
-      document.getElementById('jugadores').scrollIntoView({behavior:'smooth'});
-    }
-  });
-}
+  grid.innerHTML = list.map(m => {
+    const fA = m.flagA || flag(m.teamA);
+    const fB = m.flagB || flag(m.teamB);
 
-function setupPlayerFilters(){
-  ['playerSearch','filterCountry','filterPosition','filterStatus'].forEach(id=>{
-    document.getElementById(id).addEventListener('input', renderPlayers);
-    document.getElementById(id).addEventListener('change', renderPlayers);
-  });
-}
+    return `
+    <div class="score-panel">
+      <div class="sp-head">
+        <span>${m.group || m.date || 'Mundial 2026'}</span>
+        ${m.status === 'live'
+          ? `<span class="live-tag"><span class="pulse-sm"></span> EN VIVO</span>`
+          : `<span>${m.status === 'finalizado' ? 'FINAL' : 'POR JUGAR'}</span>`
+        }
+      </div>
 
-function setupReveal(){
-  const obs = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in-view'); obs.unobserve(e.target); } });
-  }, { threshold:0.12 });
-  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-}
+      <div class="sp-body">
+        <div class="sp-team"><span class="flag">${fA}</span><span>${m.teamA}</span></div>
 
-function setupLiveClock(){
-  // Auto-refresh via AI every 60s
-  setInterval(fetchLiveMatches, 60000);
+        <div class="sp-center">
+          <div class="sp-score">
+            ${m.status === 'pronto' ? '--:--' : `${m.scoreA} – ${m.scoreB}`}
+          </div>
+          ${m.status === 'live' && m.minute
+            ? `<span class="sp-min">${m.minute}′</span>`
+            : ''
+          }
+        </div>
+
+        <div class="sp-team"><span class="flag">${fB}</span><span>${m.teamB}</span></div>
+      </div>
+
+      <div class="sp-foot">
+        <span>${m.city || m.date || ''}</span>
+        <span>Mundial 2026</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ====================================================================
    INIT
    ==================================================================== */
-document.addEventListener('DOMContentLoaded', ()=>{
-  // Static sections render immediately
-  renderFeaturedMatches();   // shows skeleton until live data arrives
-  renderFeaturedNews();
-  renderCatFilters();
-  renderNewsGrid();
-  renderFormatTimeline();
-  renderHostGrid();
-  renderCalendar();
-  populatePlayerFilters();
-  renderPlayers();
-  renderScoreboard();        // also skeleton until live data
+document.addEventListener('DOMContentLoaded', () => {
 
-  setupNav();
-  setupTheme();
-  setupSearch();
-  setupPlayerFilters();
-  setupReveal();
-  setupLiveClock();
+  renderScoreboard();   // skeleton
+  fetchLiveMatches();   // load data
 
-  // Fetch live match data immediately (and every 60s via setupLiveClock)
-  fetchLiveMatches();
+  setInterval(fetchLiveMatches, 60000); // refresh cada 60s
+
 });
+
 </script>
 </body>
 </html>
