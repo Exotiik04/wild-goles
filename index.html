@@ -758,24 +758,20 @@ async function fetchLiveMatches() {
     
     const data = await res.json();
     
-    if (data && data.summaries) {
-      // FILTRO: Solo permitimos partidos que contengan "Mundial" o "World Cup" en el nombre del torneo
-      MATCHES = data.summaries
-        .filter(item => {
-          const tName = (item.sport_event.tournament?.name || "").toLowerCase();
-          return tName.includes("world cup") || tName.includes("mundial");
-        })
-        .map(item => ({
-          teamA: item.sport_event.competitors.find(c => c.qualifier === 'home')?.name || "Local",
-          teamB: item.sport_event.competitors.find(c => c.qualifier === 'away')?.name || "Visitante",
-          scoreA: item.sport_event_status.home_score ?? 0,
-          scoreB: item.sport_event_status.away_score ?? 0,
-          status: item.sport_event_status.status === 'live' ? 'live' : (item.sport_event_status.status === 'closed' ? 'finalizado' : 'pronto'),
-          minute: item.sport_event_status.clock?.match_time || '',
-          stadium: item.sport_event.venue?.name || "Por definir",
-          city: item.sport_event.venue?.city_name || "",
-          date: new Date(item.sport_event.start_time).toLocaleDateString()
-        }));
+    // API-Football devuelve los datos en data.response
+    if (data && data.response) {
+      MATCHES = data.response.map(item => ({
+        teamA: item.teams.home.name,
+        teamB: item.teams.away.name,
+        scoreA: item.goals.home ?? 0,
+        scoreB: item.goals.away ?? 0,
+        status: item.fixture.status.short === '1H' || item.fixture.status.short === '2H' ? 'live' : 
+                (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
+        minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
+        stadium: item.fixture.venue.name || "Por definir",
+        city: item.fixture.venue.city || "",
+        date: new Date(item.fixture.date).toLocaleDateString()
+      }));
     }
   } catch (err) {
     console.warn("No se pudo conectar a la API o no hay partidos del Mundial hoy. Usando datos de prueba.");
@@ -1159,3 +1155,4 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 </body>
 </html>
+
