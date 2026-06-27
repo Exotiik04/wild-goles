@@ -757,6 +757,7 @@ async function fetchLiveMatches() {
     if (!res.ok) throw new Error("Error en servidor: " + res.status);
     
     const data = await res.json();
+   console.log("Respuesta completa de la API:", data); // <--- AÑADE ESTO
     
     // API-Football devuelve los datos en data.response
     if (data && data.response) {
