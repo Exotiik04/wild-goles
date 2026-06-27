@@ -753,56 +753,61 @@ function flag(teamName) {
 
 async function fetchLiveMatches() {
   try {
+    // 1. Llamada a tu función de Netlify
     const res = await fetch("/.netlify/functions/get-matches");
+    
+    // Si la respuesta no es OK, lanzamos error para ir al bloque catch
     if (!res.ok) throw new Error("Error en servidor: " + res.status);
     
     const data = await res.json();
     
-    // Verificamos si la respuesta es válida y tiene partidos
+    // 2. Validación de datos recibidos
     if (data && data.response && data.response.length > 0) {
-      MATCHES = data.response
-        .map(item => ({
-          teamA: item.teams.home.name,
-          teamB: item.teams.away.name,
-          scoreA: item.goals.home ?? 0,
-          scoreB: item.goals.away ?? 0,
-          status: (item.fixture.status.short === '1H' || item.fixture.status.short === '2H') ? 'live' : 
-                  (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
-          minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
-          stadium: item.fixture.venue.name || "Por definir",
-          city: item.fixture.venue.city || "",
-          date: new Date(item.fixture.date).toLocaleDateString()
-        }))
-        .sort((a, b) => {
-          const order = { 'live': 1, 'finalizado': 2, 'pronto': 3 };
-          return order[a.status] - order[b.status];
-        });
+      console.log("Datos recibidos de la API:", data.response);
+      
+      // Procesamos los datos reales
+      MATCHES = data.response.map(item => ({
+        teamA: item.teams.home.name,
+        teamB: item.teams.away.name,
+        scoreA: item.goals.home ?? 0,
+        scoreB: item.goals.away ?? 0,
+        status: (item.fixture.status.short === '1H' || item.fixture.status.short === '2H') ? 'live' : 
+                (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
+        minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
+        stadium: item.fixture.venue.name || "Por definir",
+        city: item.fixture.venue.city || "",
+        date: new Date(item.fixture.date).toLocaleDateString()
+      }))
+      .sort((a, b) => {
+        const order = { 'live': 1, 'finalizado': 2, 'pronto': 3 };
+        return order[a.status] - order[b.status];
+      });
+      
     } else {
-      throw new Error("Respuesta vacía de la API");
+      // Si la API responde pero el array está vacío, forzamos el catch
+      throw new Error("No hay partidos disponibles en este momento");
     }
   } catch (err) {
-    console.warn("Usando datos de prueba locales debido a:", err.message);
+    console.warn("Fallo en API o sin partidos. Usando datos de prueba:", err.message);
     
-    // Fallback: Datos falsos siempre activos si la API falla o no hay partidos
+    // Fallback con datos de prueba (aquí puedes añadir más si quieres)
     MATCHES = [
       { teamA: "España", teamB: "Brasil", scoreA: 2, scoreB: 1, status: "live", minute: "74", stadium: "Miami Gardens", city: "Miami", date: "27/06/2026", group: "Grupo E" },
       { teamA: "Francia", teamB: "Argentina", scoreA: 0, scoreB: 0, status: "pronto", time: "21:00", stadium: "MetLife Stadium", city: "Nueva York", date: "27/06/2026", group: "Grupo F" },
       { teamA: "México", teamB: "Alemania", scoreA: 1, scoreB: 3, status: "finalizado", stadium: "Estadio Azteca", city: "CDMX", date: "27/06/2026", group: "Grupo A" }
     ];
   } finally {
-    // Renderizado de la UI
+    // 3. Renderizado de la UI (esto siempre se ejecuta)
     renderScoreboard();
     renderFeaturedMatches();
     renderTicker();
     
-    // Actualizar el texto de "Última actualización"
     const statusEl = document.getElementById('liveStatus');
     if(statusEl) {
       statusEl.innerHTML = `<span style="color:var(--c-pitch-bright)">●</span> Actualizado ${new Date().toLocaleTimeString()}`;
     }
   }
 }
-
 /* ====================================================================
    RENDER HELPERS
    ==================================================================== */
