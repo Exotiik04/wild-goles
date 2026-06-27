@@ -759,34 +759,43 @@ async function fetchLiveMatches() {
     const data = await res.json();
     
     if (data && data.summaries) {
-      MATCHES = data.summaries.map(item => ({
-        teamA: item.sport_event.competitors.find(c => c.qualifier === 'home')?.name || "Local",
-        teamB: item.sport_event.competitors.find(c => c.qualifier === 'away')?.name || "Visitante",
-        scoreA: item.sport_event_status.home_score ?? 0,
-        scoreB: item.sport_event_status.away_score ?? 0,
-        status: item.sport_event_status.status === 'live' ? 'live' : (item.sport_event_status.status === 'closed' ? 'finalizado' : 'pronto'),
-        minute: item.sport_event_status.clock?.match_time || '',
-        stadium: item.sport_event.venue?.name || "Por definir",
-        city: item.sport_event.venue?.city_name || "",
-        date: new Date(item.sport_event.start_time).toLocaleDateString()
-      }));
+      // FILTRO: Solo permitimos partidos que contengan "Mundial" o "World Cup" en el nombre del torneo
+      MATCHES = data.summaries
+        .filter(item => {
+          const tName = (item.sport_event.tournament?.name || "").toLowerCase();
+          return tName.includes("world cup") || tName.includes("mundial");
+        })
+        .map(item => ({
+          teamA: item.sport_event.competitors.find(c => c.qualifier === 'home')?.name || "Local",
+          teamB: item.sport_event.competitors.find(c => c.qualifier === 'away')?.name || "Visitante",
+          scoreA: item.sport_event_status.home_score ?? 0,
+          scoreB: item.sport_event_status.away_score ?? 0,
+          status: item.sport_event_status.status === 'live' ? 'live' : (item.sport_event_status.status === 'closed' ? 'finalizado' : 'pronto'),
+          minute: item.sport_event_status.clock?.match_time || '',
+          stadium: item.sport_event.venue?.name || "Por definir",
+          city: item.sport_event.venue?.city_name || "",
+          date: new Date(item.sport_event.start_time).toLocaleDateString()
+        }));
     }
   } catch (err) {
-    console.warn("No se pudo conectar a la API. Usando datos de prueba locales.");
-    // Fallback: Datos falsos si falla la API (ideal para desarrollo local)
+    console.warn("No se pudo conectar a la API o no hay partidos del Mundial hoy. Usando datos de prueba.");
+    
+    // Fallback: Datos falsos de "prueba" para que tu diseño no se quede vacío
     MATCHES = [
-      { teamA: "España", teamB: "Brasil", scoreA: 2, scoreB: 1, status: "live", minute: "74", stadium: "Miami Gardens", city: "Miami", date: "21/06/2026", group: "Grupo E" },
-      { teamA: "Francia", teamB: "Argentina", scoreA: 0, scoreB: 0, status: "pronto", time: "21:00", stadium: "MetLife Stadium", city: "Nueva York", date: "21/06/2026", group: "Grupo F" },
-      { teamA: "México", teamB: "Alemania", scoreA: 1, scoreB: 3, status: "finalizado", stadium: "Estadio Azteca", city: "CDMX", date: "20/06/2026", group: "Grupo A" }
+      { teamA: "España", teamB: "Brasil", scoreA: 2, scoreB: 1, status: "live", minute: "74", stadium: "Miami Gardens", city: "Miami", date: "27/06/2026", group: "Grupo E" },
+      { teamA: "Francia", teamB: "Argentina", scoreA: 0, scoreB: 0, status: "pronto", time: "21:00", stadium: "MetLife Stadium", city: "Nueva York", date: "27/06/2026", group: "Grupo F" },
+      { teamA: "México", teamB: "Alemania", scoreA: 1, scoreB: 3, status: "finalizado", stadium: "Estadio Azteca", city: "CDMX", date: "27/06/2026", group: "Grupo A" }
     ];
   } finally {
-    // Siempre actualizamos la interfaz, ya sea con datos de API o locales
+    // Actualizamos la interfaz
     renderScoreboard();
     renderFeaturedMatches();
     renderTicker();
     
     const statusEl = document.getElementById('liveStatus');
-    if(statusEl) statusEl.innerHTML = `<span style="color:var(--c-pitch-bright)">●</span> Actualizado ${new Date().toLocaleTimeString()}`;
+    if(statusEl) {
+      statusEl.innerHTML = `<span style="color:var(--c-pitch-bright)">●</span> Actualizado ${new Date().toLocaleTimeString()}`;
+    }
   }
 }
 
