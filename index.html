@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wild Goles — Mundial 2026 en tiempo real</title>
+<meta name="description" content="Wild Goles: noticias, resultados en vivo, jugadores y todo el Mundial 2026 al instante.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ====================================================================
+   WILD GOLES — DESIGN TOKENS
+   ==================================================================== */
+:root{
+  /* dark (default) palette */
+  --c-bg: #070f0a;
+  --c-bg-soft: #0c1812;
+  --c-card: #0f1d15;
+  --c-card-2: #122318;
+  --c-line: rgba(244,246,241,0.10);
+  --c-text: #eef1ea;
+  --c-text-dim: #9fb0a4;
+  --c-pitch-deep: #0e3b22;
+  --c-pitch: #15803d;
+  --c-pitch-bright: #2fe070;
+  --c-red: #ff2d3d;
+  --c-red-deep: #b3121f;
+  --c-amber: #ffb020;
+  --c-white: #f4f6f1;
+
+  --shadow-lg: 0 30px 60px -20px rgba(0,0,0,0.6);
+  --shadow-sm: 0 10px 24px -12px rgba(0,0,0,0.5);
+
+  --f-display: "Anton", sans-serif;
+  --f-body: "Barlow", sans-serif;
+  --f-mono: "JetBrains Mono", monospace;
+
+  --radius: 14px;
+  --nav-h: 64px;
+  --ticker-h: 38px;
+}
+
+html[data-theme="light"]{
+  --c-bg: #f3f5ee;
+  --c-bg-soft: #ffffff;
+  --c-card: #ffffff;
+  --c-card-2: #eef1e7;
+  --c-line: rgba(10,15,12,0.10);
+  --c-text: #0b120d;
+  --c-text-dim: #4c5950;
+  --c-pitch-deep: #0e3b22;
+  --c-pitch: #14803c;
+  --c-pitch-bright: #0f9d4e;
+  --c-red: #e8132a;
+  --c-red-deep: #b3121f;
+  --shadow-lg: 0 30px 60px -25px rgba(10,20,12,0.25);
+  --shadow-sm: 0 10px 24px -14px rgba(10,20,12,0.2);
+}
+
+*,*::before,*::after{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--f-body);
+  font-weight:500;
+  -webkit-font-smoothing: antialiased;
+  overflow-x:hidden;
+  transition: background .35s ease, color .35s ease;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+ul{ list-style:none; margin:0; padding:0; }
+button{ font-family:inherit; cursor:pointer; }
+h1,h2,h3,h4{ margin:0; font-family: var(--f-display); font-weight:400; letter-spacing:.01em; text-transform:uppercase; }
+p{ margin:0; }
+.mono{ font-family: var(--f-mono); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+}
+
+.wrap{ max-width:1240px; margin:0 auto; padding:0 24px; }
+
+/* eyebrow / section label -------------------------------------------------*/
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family: var(--f-mono); font-size:12.5px; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; color: var(--c-pitch-bright);
+}
+.eyebrow::before{ content:""; width:18px; height:2px; background:var(--c-red); display:inline-block; }
+
+.section-head{ display:flex; flex-direction:column; gap:10px; margin-bottom:36px; }
+.section-head h2{ font-size: clamp(32px,5vw,52px); line-height:.96; }
+.section-head .desc{ color:var(--c-text-dim); font-size:16px; max-width:560px; font-weight:500; }
+
+/* buttons ------------------------------------------------------------- */
+.btn{
+  display:inline-flex; align-items:center; gap:10px; justify-content:center;
+  font-family:var(--f-body); font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+  font-size:14px; padding:14px 26px; border-radius:999px; border:2px solid transparent;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease, background .25s ease, border-color .25s ease;
+  white-space:nowrap;
+}
+.btn-primary{ background:var(--c-pitch-bright); color:#06150c; box-shadow: 0 10px 26px -8px rgba(47,224,112,.55); }
+.btn-primary:hover{ transform: translateY(-3px); box-shadow: 0 16px 34px -10px rgba(47,224,112,.7); }
+.btn-ghost{ background:transparent; border-color: var(--c-line); color:var(--c-text); }
+.btn-ghost:hover{ border-color: var(--c-red); color:var(--c-red); transform: translateY(-3px); }
+.btn-sm{ padding:9px 16px; font-size:12px; }
+
+/* ====================================================================
+   GRASS / NET TEXTURES (signature motif)
+   ==================================================================== */
+.grass-stripes{
+  background-image: repeating-linear-gradient(115deg,
+    rgba(20,128,61,0.55) 0px, rgba(20,128,61,0.55) 64px,
+    rgba(10,70,38,0.55) 64px, rgba(10,70,38,0.55) 128px);
+}
+.net-texture{
+  position:absolute; inset:0; pointer-events:none; opacity:.10;
+  background-image:
+    repeating-linear-gradient(45deg, var(--c-white) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-45deg, var(--c-white) 0 1px, transparent 1px 26px);
+}
+
+/* ====================================================================
+   NAVBAR + LIVE TICKER
+   ==================================================================== */
+#navbar{
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  height: var(--nav-h);
+  display:flex; align-items:center;
+  background: rgba(7,15,10,0.78);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-bottom:1px solid var(--c-line);
+  transition: background .3s ease, border-color .3s ease, transform .3s ease;
+}
+html[data-theme="light"] #navbar{ background: rgba(255,255,255,0.82); }
+#navbar.scrolled{ box-shadow: var(--shadow-sm); }
+.nav-inner{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+
+.logo{ display:flex; align-items:center; gap:10px; font-family:var(--f-display); font-size:22px; letter-spacing:.01em; }
+.logo .bolt{ color:var(--c-red); }
+.logo .mark{
+  width:30px; height:30px; border-radius:7px; background:var(--c-pitch-bright);
+  display:flex; align-items:center; justify-content:center; transform:rotate(-8deg);
+  box-shadow: 0 6px 16px -6px rgba(47,224,112,.7);
+  flex-shrink:0;
+}
+.logo .mark svg{ width:18px; height:18px; }
+
+.nav-links{ display:flex; align-items:center; gap:30px; }
+.nav-links a{
+  font-size:13.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--c-text-dim); position:relative; padding:6px 0; transition:color .2s ease;
+}
+.nav-links a::after{
+  content:""; position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--c-red);
+  transition:width .25s ease;
+}
+.nav-links a:hover{ color:var(--c-text); }
+.nav-links a:hover::after,
+.nav-links a.active::after{ width:100%; }
+.nav-links a.active{ color:var(--c-pitch-bright); }
+
+.nav-actions{ display:flex; align-items:center; gap:10px; }
+.icon-btn{
+  width:38px; height:38px; border-radius:999px; border:1px solid var(--c-line);
+  background:transparent; display:flex; align-items:center; justify-content:center;
+  color:var(--c-text); transition: border-color .2s, transform .2s, color .2s, background .2s;
+}
+.icon-btn:hover{ border-color:var(--c-pitch-bright); color:var(--c-pitch-bright); transform:translateY(-2px); }
+.icon-btn svg{ width:17px; height:17px; }
+#themeToggle .icon-moon{ display:none; }
+html[data-theme="light"] #themeToggle .icon-sun{ display:none; }
+html[data-theme="light"] #themeToggle .icon-moon{ display:block; }
+
+.hamburger{ display:none; }
+
+/* search popover */
+.search-pop{
+  position:absolute; top: calc(var(--nav-h) + var(--ticker-h) + 10px); right:24px; width:300px;
+  background:var(--c-card); border:1px solid var(--c-line); border-radius:14px; padding:10px;
+  box-shadow:var(--shadow-lg); display:flex; gap:8px; opacity:0; visibility:hidden; transform:translateY(-8px);
+  transition: all .25s ease; z-index:210;
+}
+.search-pop.open{ opacity:1; visibility:visible; transform:translateY(0); }
+.search-pop input{
+  flex:1; background:var(--c-bg-soft); border:1px solid var(--c-line); border-radius:8px; padding:10px 12px;
+  color:var(--c-text); font-family:var(--f-body); font-size:14px;
+}
+.search-pop input:focus{ outline:2px solid var(--c-pitch-bright); }
+
+/* ticker */
+.ticker-bar{
+  position:fixed; top: var(--nav-h); left:0; right:0; z-index:190; height:var(--ticker-h);
+  background: var(--c-red); color:#fff; overflow:hidden; display:flex; align-items:center;
+  border-bottom: 2px solid rgba(0,0,0,.25);
+  background-image: repeating-linear-gradient(135deg, rgba(0,0,0,.12) 0 10px, transparent 10px 20px);
+}
+.ticker-track{ display:flex; gap:46px; white-space:nowrap; padding-left:46px; animation: ticker-scroll 38s linear infinite; }
+.ticker-bar:hover .ticker-track{ animation-play-state: paused; }
+@keyframes ticker-scroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+.ticker-item{ font-family:var(--f-mono); font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:10px; letter-spacing:.02em; }
+.ticker-item .dot{ width:6px; height:6px; border-radius:50%; background:#fff; }
+.ticker-item .live-chip{
+  background:#fff; color:var(--c-red); font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; letter-spacing:.08em;
+}
+
+body{ padding-top: calc(var(--nav-h) + var(--ticker-h)); }
+
+/* ====================================================================
+   HERO
+   ==================================================================== */
+.hero{
+  position:relative; min-height: 92vh; display:flex; align-items:center; overflow:hidden;
+  background: radial-gradient(ellipse at 18% 0%, rgba(47,224,112,.18), transparent 55%),
+              linear-gradient(180deg, var(--c-bg) 0%, var(--c-bg-soft) 100%);
+  isolation:isolate;
+}
+.hero::before{
+  content:""; position:absolute; inset:0; z-index:-2; opacity:.5;
+  background-image: repeating-linear-gradient(118deg,
+    rgba(21,128,61,0.30) 0px, rgba(21,128,61,0.30) 70px,
+    transparent 70px, transparent 140px);
+  mask-image: linear-gradient(180deg, rgba(0,0,0,.9), transparent 85%);
+}
+.hero .net-texture{ z-index:-1; }
+.hero-inner{ width:100%; padding-top:64px; padding-bottom:50px; }
+.hero-badge{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+  background:var(--c-card); border:1px solid var(--c-line); font-family:var(--f-mono); font-size:12px;
+  font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:26px; color:var(--c-text-dim);
+}
+.hero-badge .pulse{ width:8px; height:8px; border-radius:50%; background:var(--c-red); box-shadow:0 0 0 0 rgba(255,45,61,.7); animation: pulse 1.6s infinite; }
+@keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(255,45,61,.55);} 70%{box-shadow:0 0 0 9px rgba(255,45,61,0);} 100%{box-shadow:0 0 0 0 rgba(255,45,61,0);} }
+
+.hero h1{
+  font-size: clamp(58px, 13vw, 152px); line-height:.86; margin:0 0 6px -3px;
+  position:relative; display:inline-block;
+}
+.hero h1 .line1,.hero h1 .line2{ display:block; }
+.hero h1 .line2{ color: var(--c-pitch-bright); position:relative; }
+.hero h1 .slash{
+  position:absolute; left:-2%; right:-2%; height:14px; bottom:-2px;
+  background: var(--c-red); transform: skewX(-18deg) translateY(8px); z-index:-1; opacity:.85;
+}
+.hero .subtitle{
+  font-size: clamp(16px,2.4vw,22px); color:var(--c-text-dim); font-weight:600; max-width:540px;
+  margin-top:22px; line-height:1.45;
+}
+.hero-cta{ display:flex; flex-wrap:wrap; gap:14px; margin-top:36px; }
+
+.hero-stats{ display:flex; gap:0; margin-top:56px; flex-wrap:wrap; border-top:1px solid var(--c-line); padding-top:26px; }
+.hero-stats .stat{ padding-right:38px; margin-right:38px; border-right:1px solid var(--c-line); }
+.hero-stats .stat:last-child{ border-right:none; }
+.hero-stats .stat b{ display:block; font-family:var(--f-display); font-size:34px; color:var(--c-white); }
+.hero-stats .stat span{ font-size:12px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+
+/* ====================================================================
+   GENERIC SECTION + DIAGONAL DIVIDERS
+   ==================================================================== */
+section{ position:relative; padding: 100px 0; }
+.section-alt{ background: var(--c-bg-soft); }
+.cut-top{ clip-path: polygon(0 26px, 100% 0, 100% 100%, 0% 100%); margin-top:-26px; }
+.cut-bottom-flip{ clip-path: polygon(0 0,100% 0,100% 100%, 0 calc(100% - 26px)); }
+
+/* ====================================================================
+   CARDS (matches / news / players) — shared hover language
+   ==================================================================== */
+.card{
+  background:var(--c-card); border:1px solid var(--c-line); border-radius:var(--radius);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
+  position:relative; overflow:hidden;
+}
+.card:hover{ transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(47,224,112,.4); }
+.card::after{
+  content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,.07), transparent);
+  transform: skewX(-18deg); transition: left .6s ease; pointer-events:none;
+}
+.card:hover::after{ left:130%; }
+
+/* ---- featured matches row (home) ---- */
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.match-card{ padding:20px; display:flex; flex-direction:column; gap:16px; }
+.match-card .m-top{ display:flex; justify-content:space-between; align-items:center; font-family:var(--f-mono); font-size:11.5px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:.06em; }
+.status-pill{ padding:3px 9px; border-radius:6px; font-weight:800; font-size:10.5px; letter-spacing:.07em; }
+.status-live{ background:var(--c-red); color:#fff; display:flex; align-items:center; gap:5px; }
+.status-live .pulse-sm{ width:6px; height:6px; border-radius:50%; background:#fff; animation:pulse 1.4s infinite; }
+.status-fin{ background:var(--c-card-2); color:var(--c-text-dim); }
+.status-upc{ background: rgba(47,224,112,.14); color:var(--c-pitch-bright); }
+.m-teams{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.m-team{ display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; text-align:center; }
+.m-team .flag{ font-size:30px; line-height:1; }
+.m-team .tname{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.02em; }
+.m-score{ font-family:var(--f-mono); font-size:30px; font-weight:800; color:var(--c-white); display:flex; align-items:center; gap:6px; }
+.m-score .sep{ color:var(--c-text-dim); font-size:20px; }
+.m-meta{ font-size:12px; color:var(--c-text-dim); display:flex; justify-content:space-between; border-top:1px dashed var(--c-line); padding-top:12px; font-weight:600; }
+
+/* ---- news ---- */
+.feat-news-grid{ display:grid; grid-template-columns: 1.3fr 1fr; gap:22px; margin-bottom:22px; }
+.news-card{ display:flex; flex-direction:column; }
+.news-card .thumb{
+  height:200px; border-radius:var(--radius) var(--radius) 0 0; position:relative; overflow:hidden;
+  display:flex; align-items:flex-end; padding:16px;
+}
+.news-card.big .thumb{ height:320px; padding:26px; }
+.news-card .thumb-bg{ position:absolute; inset:0; z-index:0; }
+.news-card .cat-tag{
+  position:relative; z-index:1; background:var(--c-red); color:#fff; font-size:11px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.06em; padding:5px 10px; border-radius:5px;
+}
+.news-card .body{ padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.news-card h3{ font-size:19px; line-height:1.12; text-transform:none; letter-spacing:0; font-family:var(--f-body); font-weight:800; }
+.news-card.big h3{ font-size:27px; }
+.news-card p.excerpt{ color:var(--c-text-dim); font-size:13.6px; line-height:1.5; font-weight:500; }
+.news-card .meta{ margin-top:auto; display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:11px; color:var(--c-text-dim); padding-top:8px; border-top:1px solid var(--c-line); }
+
+.news-list-row{ display:flex; flex-direction:column; gap:14px; }
+.news-list-item{ display:flex; gap:14px; padding:14px; align-items:center; }
+.news-list-item .thumb-sm{ width:74px; height:74px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-size:20px; color:#fff; }
+.news-list-item .body{ padding:0; gap:5px; }
+.news-list-item h3{ font-size:14.5px; }
+.news-list-item .meta{ border-top:none; padding-top:2px; }
+
+.news-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+
+.cat-filters{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px; }
+.cat-chip{
+  padding:9px 18px; border-radius:999px; border:1px solid var(--c-line); background:transparent; color:var(--c-text-dim);
+  font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; transition: all .25s ease;
+}
+.cat-chip:hover{ border-color:var(--c-pitch-bright); color:var(--c-text); }
+.cat-chip.active{ background:var(--c-pitch-bright); color:#06150c; border-color:var(--c-pitch-bright); }
+
+/* ====================================================================
+   MUNDIAL / ORGANIZATION
+   ==================================================================== */
+.format-timeline{ display:grid; grid-template-columns:repeat(6,1fr); gap:14px; counter-reset:stage; }
+.stage-card{ padding:20px 16px; position:relative; }
+.stage-card .num{ font-family:var(--f-mono); font-size:12px; color:var(--c-red); font-weight:800; }
+.stage-card h4{ font-size:15.5px; margin:10px 0 6px; letter-spacing:0; text-transform:none; font-family:var(--f-body); font-weight:800; }
+.stage-card p{ font-size:12.5px; color:var(--c-text-dim); line-height:1.5; font-weight:500; }
+.stage-card .conn{ position:absolute; top:50%; right:-14px; width:14px; height:2px; background:var(--c-line); display:none; }
+
+.host-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.host-card{ padding:24px; }
+.host-card .flagbig{ font-size:42px; }
+.host-card h3{ font-size:22px; margin:12px 0 4px; font-family:var(--f-display); }
+.host-card .count{ font-family:var(--f-mono); color:var(--c-pitch-bright); font-size:13px; font-weight:700; margin-bottom:14px; display:block; }
+.city-tags{ display:flex; flex-wrap:wrap; gap:8px; }
+.city-tags span{ background:var(--c-card-2); border:1px solid var(--c-line); padding:6px 11px; border-radius:7px; font-size:12.5px; font-weight:700; }
+
+.calendar-rail{ position:relative; padding-left:28px; }
+.calendar-rail::before{ content:""; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--c-pitch-bright), var(--c-red)); }
+.cal-row{ position:relative; padding:0 0 28px 18px; }
+.cal-row::before{ content:""; position:absolute; left:-28px; top:3px; width:13px; height:13px; border-radius:50%; background:var(--c-bg); border:3px solid var(--c-pitch-bright); }
+.cal-row .date{ font-family:var(--f-mono); font-size:12.5px; color:var(--c-red); font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+.cal-row h4{ font-size:17px; margin:5px 0 4px; font-family:var(--f-body); text-transform:none; letter-spacing:0; font-weight:800; }
+.cal-row p{ font-size:13.5px; color:var(--c-text-dim); font-weight:500; }
+
+/* ====================================================================
+   PLAYERS
+   ==================================================================== */
+.players-controls{
+  display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:30px; padding:18px;
+  background:var(--c-card); border:1px solid var(--c-line); border-radius:var(--radius);
+}
+.players-controls .search-field{
+  flex:1; min-width:220px; display:flex; align-items:center; gap:10px; background:var(--c-bg-soft);
+  border:1px solid var(--c-line); border-radius:10px; padding:11px 14px;
+}
+.players-controls .search-field input{ flex:1; border:none; background:transparent; color:var(--c-text); font-size:14px; font-family:var(--f-body); font-weight:600; }
+.players-controls .search-field input:focus{ outline:none; }
+.players-controls select{
+  background:var(--c-bg-soft); border:1px solid var(--c-line); color:var(--c-text); padding:11px 12px; border-radius:10px;
+  font-family:var(--f-body); font-weight:700; font-size:13.5px; min-width:150px;
+}
+.players-count{ font-family:var(--f-mono); font-size:12px; color:var(--c-text-dim); width:100%; margin-top:-4px;}
+
+.players-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+.player-card{ padding:20px; display:flex; flex-direction:column; gap:14px; align-items:flex-start; }
+.player-avatar{
+  width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-display); font-size:19px; color:#fff; flex-shrink:0;
+}
+.player-name{ font-size:16.5px; font-weight:800; font-family:var(--f-body); text-transform:none; letter-spacing:0; }
+.player-sub{ font-size:12px; color:var(--c-text-dim); font-weight:700; display:flex; align-items:center; gap:6px; }
+.player-badges{ display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:10px; border-top:1px solid var(--c-line); width:100%; }
+.tag-pos{ font-family:var(--f-mono); font-size:11px; background:var(--c-card-2); padding:4px 9px; border-radius:6px; font-weight:700; }
+.status-dot-wrap{ display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:4px 9px; border-radius:6px; }
+.status-dot{ width:7px; height:7px; border-radius:50%; }
+.st-apto{ background:rgba(47,224,112,.14); color:var(--c-pitch-bright); } .st-apto .status-dot{ background:var(--c-pitch-bright); }
+.st-duda{ background:rgba(255,176,32,.16); color:var(--c-amber); } .st-duda .status-dot{ background:var(--c-amber); }
+.st-lesionado{ background:rgba(255,45,61,.14); color:var(--c-red); } .st-lesionado .status-dot{ background:var(--c-red); }
+.no-results{ grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--c-text-dim); }
+.no-results .big-emoji{ font-size:40px; margin-bottom:12px; }
+
+/* ====================================================================
+   LIVE SCOREBOARD
+   ==================================================================== */
+.scoreboard-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+.score-panel{
+  background: linear-gradient(160deg, var(--c-card) 0%, var(--c-card-2) 100%);
+  border:1px solid var(--c-line); border-radius:var(--radius); overflow:hidden;
+  box-shadow: var(--shadow-sm);
+}
+.score-panel .sp-head{
+  display:flex; justify-content:space-between; align-items:center; padding:12px 18px;
+  background: var(--c-pitch-deep); font-family:var(--f-mono); font-size:11.5px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.06em; color:#bdeccf;
+}
+.sp-head .live-tag{ display:flex; align-items:center; gap:6px; color:#fff; background:var(--c-red); padding:3px 9px; border-radius:5px; font-weight:800; }
+.sp-body{ padding:22px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sp-team{ display:flex; flex-direction:column; align-items:center; gap:10px; width:38%; text-align:center; }
+.sp-team .flag{ font-size:38px; }
+.sp-team .tname{ font-size:13.5px; font-weight:800; text-transform:uppercase; }
+.sp-center{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.sp-score{ font-family:var(--f-mono); font-size:42px; font-weight:800; color:var(--c-white); letter-spacing:2px; }
+.sp-min{ font-family:var(--f-mono); font-size:12px; color:var(--c-red); font-weight:800; }
+.sp-foot{ padding:12px 18px; border-top:1px solid var(--c-line); display:flex; justify-content:space-between; font-size:11.5px; color:var(--c-text-dim); font-weight:700; }
+
+.demo-disclaimer{
+  margin-top:30px; padding:14px 18px; border:1px dashed var(--c-line); border-radius:10px;
+  font-size:12.5px; color:var(--c-text-dim); display:flex; gap:10px; align-items:flex-start; line-height:1.5;
+}
+
+/* ====================================================================
+   FOOTER
+   ==================================================================== */
+footer{ background: var(--c-bg-soft); border-top:1px solid var(--c-line); padding:60px 0 26px; }
+.footer-grid{ display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; margin-bottom:40px; }
+.footer-grid h5{ font-size:12.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--c-text-dim); margin-bottom:16px; font-family:var(--f-body); font-weight:800; }
+.footer-grid li{ margin-bottom:10px; font-size:14px; font-weight:600; color:var(--c-text-dim); transition:color .2s; }
+.footer-grid li:hover{ color: var(--c-pitch-bright); cursor:pointer; }
+.footer-bottom{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; padding-top:24px; border-top:1px solid var(--c-line); font-size:12.5px; color:var(--c-text-dim); font-weight:600; }
+
+/* ====================================================================
+   SCROLL REVEAL
+   ==================================================================== */
+.reveal{ opacity:0; transform: translateY(28px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+.reveal.in-view{ opacity:1; transform:none; }
+
+/* ====================================================================
+   RESPONSIVE
+   ==================================================================== */
+@media (max-width:1024px){
+  .grid-3{ grid-template-columns:repeat(2,1fr); }
+  .news-grid{ grid-template-columns:repeat(2,1fr); }
+  .players-grid{ grid-template-columns:repeat(3,1fr); }
+  .format-timeline{ grid-template-columns:repeat(3,1fr); }
+  .host-grid{ grid-template-columns:1fr; }
+  .feat-news-grid{ grid-template-columns:1fr; }
+  .footer-grid{ grid-template-columns:1.4fr 1fr 1fr; }
+  .footer-grid .col-links4{ display:none; }
+}
+@media (max-width:760px){
+  :root{ --nav-h:58px; --ticker-h:32px; }
+  .nav-links{ position:fixed; top:calc(var(--nav-h) + var(--ticker-h)); left:0; right:0; bottom:0;
+    background:var(--c-bg); flex-direction:column; align-items:flex-start; padding:30px 24px; gap:6px;
+    transform:translateX(-100%); transition:transform .35s ease; overflow-y:auto; }
+  .nav-links.open{ transform:translateX(0); }
+  .nav-links a{ width:100%; padding:14px 0; border-bottom:1px solid var(--c-line); font-size:16px; }
+  .hamburger{ display:flex; }
+  .grid-3{ grid-template-columns:1fr; }
+  .news-grid{ grid-template-columns:1fr; }
+  .players-grid{ grid-template-columns:repeat(2,1fr); }
+  .format-timeline{ grid-template-columns:repeat(2,1fr); }
+  .scoreboard-grid{ grid-template-columns:1fr; }
+  .hero-stats{ gap:0; }
+  .hero-stats .stat{ padding-right:20px; margin-right:20px; }
+  .footer-grid{ grid-template-columns:1fr 1fr; }
+  .search-pop{ right:14px; left:14px; width:auto; }
+}
+@media (max-width:480px){
+  .players-grid{ grid-template-columns:1fr; }
+  .format-timeline{ grid-template-columns:1fr; }
+  .wrap{ padding:0 18px; }
+  section{ padding:70px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================== NAVBAR ============================== -->
+<nav id="navbar">
+  <div class="wrap nav-inner">
+    <a href="#inicio" class="logo">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5Z" stroke="#06150c" stroke-width="2" stroke-linejoin="round"/></svg></span>
+      WILD <span class="bolt">GOLES</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#inicio" class="active" data-link>Inicio</a></li>
+      <li><a href="#mundial" data-link>Mundial</a></li>
+      <li><a href="#jugadores" data-link>Jugadores</a></li>
+      <li><a href="#noticias" data-link>Noticias</a></li>
+      <li><a href="#envivo" data-link>En vivo</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="icon-btn" id="searchToggle" aria-label="Buscar jugador">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn hamburger" id="navToggle" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="search-pop" id="searchPop">
+  <input type="text" id="globalSearch" placeholder="Buscar jugador, selección…" autocomplete="off">
+</div>
+
+<!-- live ticker -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<main>
+<!-- ============================== HERO ============================== -->
+<section class="hero" id="inicio">
+  <div class="net-texture"></div>
+  <div class="wrap hero-inner">
+    <span class="hero-badge"><span class="pulse"></span> JORNADA 3 · FASE DE GRUPOS · 21 JUN 2026</span>
+    <h1>
+      <span class="line1">WILD</span>
+      <span class="line2">GOLES<span class="slash"></span></span>
+    </h1>
+    <p class="subtitle">Actualizaciones del Mundial 2026 en tiempo real: resultados, lesiones, fichajes y la jugada que todos van a comentar mañana.</p>
+    <div class="hero-cta">
+      <a href="#envivo" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7Z" fill="#06150c"/></svg>
+        Ver resultados en vivo
+      </a>
+      <a href="#mundial" class="btn btn-ghost">Explorar el Mundial</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><b>48</b><span>Selecciones</span></div>
+      <div class="stat"><b>104</b><span>Partidos</span></div>
+      <div class="stat"><b>16</b><span>Sedes · 3 países</span></div>
+      <div class="stat"><b>39</b><span>Días de torneo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== HOME: FEATURED MATCHES ====================== -->
+<section class="cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Jornada de hoy</span>
+      <h2>Partidos destacados</h2>
+      <p class="desc">Lo que se está jugando ahora mismo y lo que viene esta noche en la Fase de Grupos.</p>
+    </div>
+    <div class="grid-3" id="featuredMatches"></div>
+  </div>
+</section>
+
+<!-- ====================== HOME: HIGHLIGHTED NEWS ====================== -->
+<section class="section-alt cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Portada</span>
+      <h2>Noticias destacadas</h2>
+      <p class="desc">Lo más leído de Wild Goles en las últimas horas.</p>
+    </div>
+    <div class="feat-news-grid reveal" id="featuredNews"></div>
+  </div>
+</section>
+
+<!-- ============================== MUNDIAL ============================== -->
+<section id="mundial" class="cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Organización</span>
+      <h2>Así funciona el Mundial 2026</h2>
+      <p class="desc">El torneo más grande de la historia: 48 selecciones, tres países anfitriones y un formato totalmente nuevo.</p>
+    </div>
+
+    <div class="format-timeline reveal" id="formatTimeline"></div>
+
+    <div class="section-head reveal" style="margin-top:80px;">
+      <span class="eyebrow">Sedes</span>
+      <h2>Países y ciudades anfitrionas</h2>
+      <p class="desc">16 estadios repartidos entre Estados Unidos, México y Canadá.</p>
+    </div>
+    <div class="host-grid reveal" id="hostGrid"></div>
+
+    <div class="section-head reveal" style="margin-top:80px;">
+      <span class="eyebrow">Calendario</span>
+      <h2>Fechas clave del torneo</h2>
+      <p class="desc">Del partido inaugural en el Azteca a la gran final en el MetLife Stadium.</p>
+    </div>
+    <div class="calendar-rail reveal" id="calendarRail"></div>
+  </div>
+</section>
+
+<!-- ============================== JUGADORES ============================== -->
+<section id="jugadores" class="section-alt cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Plantillas</span>
+      <h2>Jugadores y lesiones</h2>
+      <p class="desc">Estado físico actualizado de las piezas clave de cada selección.</p>
+    </div>
+
+    <div class="players-controls reveal">
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="playerSearch" placeholder="Buscar jugador por nombre…">
+      </div>
+      <select id="filterCountry"><option value="">Toda selección</option></select>
+      <select id="filterPosition"><option value="">Toda posición</option></select>
+      <select id="filterStatus">
+        <option value="">Todo estado</option>
+        <option value="apto">Apto</option>
+        <option value="duda">Duda</option>
+        <option value="lesionado">Lesionado</option>
+      </select>
+      <span class="players-count" id="playersCount"></span>
+    </div>
+
+    <div class="players-grid reveal" id="playersGrid"></div>
+  </div>
+</section>
+
+<!-- ============================== NOTICIAS ============================== -->
+<section id="noticias" class="cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Redacción Wild Goles</span>
+      <h2>Noticias del Mundial</h2>
+      <p class="desc">Partidos, selecciones, lesiones, polémicas y análisis táctico, jornada a jornada.</p>
+    </div>
+    <div class="cat-filters reveal" id="catFilters"></div>
+    <div class="news-grid reveal" id="newsGrid"></div>
+  </div>
+</section>
+
+<!-- ============================== EN VIVO ============================== -->
+<section id="envivo" class="section-alt cut-top">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Scoreboard</span>
+      <h2>Resultados en vivo</h2>
+      <p class="desc">Marcador minuto a minuto de la Jornada 3 de la Fase de Grupos.</p>
+    </div>
+    <div class="scoreboard-grid reveal" id="scoreboardGrid"></div>
+    <div class="demo-disclaimer reveal" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <span style="display:flex;gap:8px;align-items:center;">
+        <span>ⓘ</span>
+        <span>Marcadores obtenidos en tiempo real vía IA · Jugadores y lesiones son datos ilustrativos.</span>
+      </span>
+      <span id="liveStatus" class="mono" style="font-size:12px;color:var(--c-text-dim);display:flex;align-items:center;gap:6px;">Iniciando…</span>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============================== FOOTER ============================== -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:14px;">
+          <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5Z" stroke="#06150c" stroke-width="2" stroke-linejoin="round"/></svg></span>
+          WILD <span class="bolt">GOLES</span>
+        </div>
+        <p style="color:var(--c-text-dim); font-size:14px; max-width:280px; line-height:1.6; font-weight:500;">El medio digital más rápido del Mundial 2026: en vivo, sin pausas, sin relleno.</p>
+      </div>
+      <div>
+        <h5>Secciones</h5>
+        <ul><li>Inicio</li><li>Mundial</li><li>Jugadores</li><li>Noticias</li><li>En vivo</li></ul>
+      </div>
+      <div class="col-links4">
+        <h5>Categorías</h5>
+        <ul><li>Partidos</li><li>Selecciones</li><li>Lesiones</li><li>Polémicas</li><li>Análisis táctico</li></ul>
+      </div>
+      <div>
+        <h5>Síguenos</h5>
+        <ul><li>Instagram</li><li>X / Twitter</li><li>TikTok</li><li>YouTube</li></ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Wild Goles. Sitio de demostración — no afiliado a la FIFA.</span>
+      <span>Hecho para sentir el Mundial en tiempo real ⚽</span>
+    </div>
+  </div>
+</footer>
+<script>
+/* ====================================================================
+   DATOS DE PRUEBA (MOCKS) - Evitan que el script se rompa al iniciar
+   ==================================================================== */
+const CATEGORIES = ["Todas", "Partidos", "Selecciones", "Lesiones", "Polémicas"];
+const CAT_COLORS = { "Partidos": "#1d4ed8", "Selecciones": "#15803d", "Lesiones": "#b3121f", "Polémicas": "#b45309" };
+
+const NEWS = [
+  { featured: true, big: true, cat: "Partidos", title: "¡Partidazo en el Azteca para arrancar!", excerpt: "Resumen del encuentro con victoria agónica en el minuto 94.", date: "Hace 2 horas" },
+  { featured: true, cat: "Lesiones", title: "Alarma máxima en Brasil", excerpt: "La estrella sale cojeando del último entrenamiento.", date: "Hace 3 horas" },
+  { featured: true, cat: "Selecciones", title: "España confirma su once titular", excerpt: "Sorpresas en la alineación para el debut de esta noche.", date: "Hace 4 horas" }
+];
+
+const PLAYERS = [
+  { name: "Lamine Yamal", country: "España", position: "DEL", status: "apto" },
+  { name: "Kylian Mbappé", country: "Francia", position: "DEL", status: "duda" },
+  { name: "Kevin De Bruyne", country: "Bélgica", position: "MED", status: "lesionado" },
+  { name: "Vinícius Jr", country: "Brasil", position: "DEL", status: "apto" },
+  { name: "Leo Messi", country: "Argentina", position: "DEL", status: "apto" },
+  { name: "Alphonso Davies", country: "Canadá", position: "DEF", status: "duda" }
+];
+
+const FORMAT_STAGES = [
+  { n: "01", t: "Fase de Grupos", d: "12 grupos de 4 equipos. Pasan los 2 primeros y los 8 mejores terceros." },
+  { n: "02", t: "Dieciseisavos", d: "Nueva ronda eliminatoria con 32 selecciones buscando la gloria." },
+  { n: "03", t: "Octavos y Cuartos", d: "Eliminación directa sin margen de error." },
+  { n: "04", t: "Semifinales", d: "Los 4 mejores del torneo frente a frente por el pase a la historia." },
+  { n: "05", t: "Gran Final", d: "19 de julio de 2026 en Nueva York/Nueva Jersey. El mundo se detiene." }
+];
+
+const HOSTS = [
+  { flag: "🇺🇸", country: "Estados Unidos", count: "11 sedes", cities: ["Nueva York", "Los Ángeles", "Miami", "Dallas", "Atlanta"] },
+  { flag: "🇲🇽", country: "México", count: "3 sedes", cities: ["Ciudad de México", "Guadalajara", "Monterrey"] },
+  { flag: "🇨🇦", country: "Canadá", count: "2 sedes", cities: ["Toronto", "Vancouver"] }
+];
+
+const CALENDAR = [
+  { date: "11 JUN", title: "Partido Inaugural", desc: "Estadio Azteca (México)" },
+  { date: "27 JUN", title: "Cierre Fase de Grupos", desc: "Definición de los 32 clasificados" },
+  { date: "19 JUL", title: "Gran Final", desc: "MetLife Stadium (Nueva York/Nueva Jersey)" }
+];
+
+/* ====================================================================
+   VARIABLES GLOBALES Y LÓGICA DE DATOS
+   ==================================================================== */
+let MATCHES = []; 
+let lastFetchedAt = null;
+
+// Función que faltaba: Devuelve la bandera o un balón por defecto
+function flag(teamName) {
+  const flags = {
+    "España": "🇪🇸", "Francia": "🇫🇷", "Bélgica": "🇧🇪", "Brasil": "🇧🇷",
+    "México": "🇲🇽", "Estados Unidos": "🇺🇸", "Canadá": "🇨🇦", "Argentina": "🇦🇷",
+    "Alemania": "🇩🇪", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Portugal": "🇵🇹"
+  };
+  return flags[teamName] || "⚽";
+}
+
+async function fetchLiveMatches() {
+  try {
+    const res = await fetch("/.netlify/functions/get-matches");
+    if (!res.ok) throw new Error("Error en servidor: " + res.status);
+    
+    const data = await res.json();
+    
+    if (data && data.summaries) {
+      MATCHES = data.summaries.map(item => ({
+        teamA: item.sport_event.competitors.find(c => c.qualifier === 'home')?.name || "Local",
+        teamB: item.sport_event.competitors.find(c => c.qualifier === 'away')?.name || "Visitante",
+        scoreA: item.sport_event_status.home_score ?? 0,
+        scoreB: item.sport_event_status.away_score ?? 0,
+        status: item.sport_event_status.status === 'live' ? 'live' : (item.sport_event_status.status === 'closed' ? 'finalizado' : 'pronto'),
+        minute: item.sport_event_status.clock?.match_time || '',
+        stadium: item.sport_event.venue?.name || "Por definir",
+        city: item.sport_event.venue?.city_name || "",
+        date: new Date(item.sport_event.start_time).toLocaleDateString()
+      }));
+    }
+  } catch (err) {
+    console.warn("No se pudo conectar a la API. Usando datos de prueba locales.");
+    // Fallback: Datos falsos si falla la API (ideal para desarrollo local)
+    MATCHES = [
+      { teamA: "España", teamB: "Brasil", scoreA: 2, scoreB: 1, status: "live", minute: "74", stadium: "Miami Gardens", city: "Miami", date: "21/06/2026", group: "Grupo E" },
+      { teamA: "Francia", teamB: "Argentina", scoreA: 0, scoreB: 0, status: "pronto", time: "21:00", stadium: "MetLife Stadium", city: "Nueva York", date: "21/06/2026", group: "Grupo F" },
+      { teamA: "México", teamB: "Alemania", scoreA: 1, scoreB: 3, status: "finalizado", stadium: "Estadio Azteca", city: "CDMX", date: "20/06/2026", group: "Grupo A" }
+    ];
+  } finally {
+    // Siempre actualizamos la interfaz, ya sea con datos de API o locales
+    renderScoreboard();
+    renderFeaturedMatches();
+    renderTicker();
+    
+    const statusEl = document.getElementById('liveStatus');
+    if(statusEl) statusEl.innerHTML = `<span style="color:var(--c-pitch-bright)">●</span> Actualizado ${new Date().toLocaleTimeString()}`;
+  }
+}
+
+/* ====================================================================
+   RENDER HELPERS
+   ==================================================================== */
+function statusPillHTML(status, minute){
+  if(status === "live") return `<span class="status-pill status-live"><span class="pulse-sm"></span> EN VIVO · ${minute}'</span>`;
+  if(status === "finalizado") return `<span class="status-pill status-fin">FINALIZADO</span>`;
+  return `<span class="status-pill status-upc">PRONTO</span>`;
+}
+
+function matchCardHTML(m){
+  const fA = m.flagA || flag(m.teamA);
+  const fB = m.flagB || flag(m.teamB);
+  const topLeft = m.group || m.date || "";
+  return `
+  <div class="card match-card">
+    <div class="m-top"><span>${topLeft}</span>${statusPillHTML(m.status, m.minute)}</div>
+    <div class="m-teams">
+      <div class="m-team"><span class="flag">${fA}</span><span class="tname">${m.teamA}</span></div>
+      <div class="m-score">${m.status==='pronto' ? (m.time||'--:--') : `<span>${m.scoreA}</span><span class="sep">:</span><span>${m.scoreB}</span>`}</div>
+      <div class="m-team"><span class="flag">${fB}</span><span class="tname">${m.teamB}</span></div>
+    </div>
+    <div class="m-meta"><span>${m.stadium||''}</span><span>${m.city||m.date||''}</span></div>
+  </div>`;
+}
+
+function renderFeaturedMatches(){
+  const container = document.getElementById('featuredMatches');
+  if(!container) return;
+  if(!MATCHES.length){
+    container.innerHTML=`<div class="no-results" style="grid-column:1/-1"><div class="big-emoji">⏳</div>Cargando partidos…</div>`;
+    return;
+  }
+  const featured = [...MATCHES].sort((a,b)=>{
+    const order = {live:0, pronto:1, finalizado:2};
+    return (order[a.status]||2)-(order[b.status]||2);
+  }).slice(0,3);
+  container.innerHTML = featured.map(matchCardHTML).join('');
+}
+
+function newsThumbBgStyle(cat){
+  const color = (typeof CAT_COLORS !== 'undefined' && CAT_COLORS[cat]) ? CAT_COLORS[cat] : "#15803d";
+  return `background: linear-gradient(160deg, ${color}cc, #07100fcc), repeating-linear-gradient(115deg, rgba(255,255,255,.08) 0 10px, transparent 10px 22px); background-color:${color};`;
+}
+
+function renderFeaturedNews(){
+  if(typeof NEWS === 'undefined' || NEWS.length === 0) return;
+  const items = NEWS.filter(n=>n.featured);
+  const big = items.find(n=>n.big) || items[0];
+  const rest = items.filter(n=>n!==big);
+  const bigHTML = `
+    <div class="card news-card big">
+      <div class="thumb" style="${newsThumbBgStyle(big.cat)}">
+        <span class="cat-tag">${big.cat}</span>
+      </div>
+      <div class="body">
+        <h3>${big.title}</h3>
+        <p class="excerpt">${big.excerpt}</p>
+        <div class="meta"><span>Wild Goles</span><span>${big.date}</span></div>
+      </div>
+    </div>`;
+  const listHTML = `<div class="news-list-row">` + rest.map(n=>`
+      <div class="card news-list-item">
+        <div class="thumb-sm" style="${newsThumbBgStyle(n.cat)}">${n.cat.slice(0,2).toUpperCase()}</div>
+        <div class="body">
+          <span class="eyebrow" style="margin-bottom:2px;">${n.cat}</span>
+          <h3>${n.title}</h3>
+          <div class="meta"><span>${n.date}</span></div>
+        </div>
+      </div>`).join('') + `</div>`;
+  document.getElementById('featuredNews').innerHTML = bigHTML + listHTML;
+}
+
+let activeCategory = "Todas";
+function renderCatFilters(){
+  const container = document.getElementById('catFilters');
+  if(!container) return;
+  container.innerHTML = CATEGORIES.map(c=>
+    `<button class="cat-chip ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>`
+  ).join('');
+  document.querySelectorAll('.cat-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeCategory = btn.dataset.cat;
+      renderCatFilters();
+      renderNewsGrid();
+    });
+  });
+}
+
+function renderNewsGrid(){
+  const container = document.getElementById('newsGrid');
+  if(!container) return;
+  const list = activeCategory === "Todas" ? NEWS : NEWS.filter(n=>n.cat===activeCategory);
+  container.innerHTML = list.map(n=>`
+    <div class="card news-card">
+      <div class="thumb" style="${newsThumbBgStyle(n.cat)}"><span class="cat-tag">${n.cat}</span></div>
+      <div class="body">
+        <h3>${n.title}</h3>
+        <p class="excerpt">${n.excerpt}</p>
+        <div class="meta"><span>Wild Goles</span><span>${n.date}</span></div>
+      </div>
+    </div>`).join('') || `<div class="no-results"><div class="big-emoji">📰</div>No hay noticias en esta categoría todavía.</div>`;
+}
+
+function renderFormatTimeline(){
+  const container = document.getElementById('formatTimeline');
+  if(container && typeof FORMAT_STAGES !== 'undefined') {
+    container.innerHTML = FORMAT_STAGES.map(s=>`
+    <div class="card stage-card">
+      <span class="num">${s.n}</span>
+      <h4>${s.t}</h4>
+      <p>${s.d}</p>
+    </div>`).join('');
+  }
+}
+
+function renderHostGrid(){
+  const container = document.getElementById('hostGrid');
+  if(container && typeof HOSTS !== 'undefined') {
+    container.innerHTML = HOSTS.map(h=>`
+    <div class="card host-card">
+      <span class="flagbig">${h.flag}</span>
+      <h3>${h.country}</h3>
+      <span class="count">${h.count}</span>
+      <div class="city-tags">${h.cities.map(c=>`<span>${c}</span>`).join('')}</div>
+    </div>`).join('');
+  }
+}
+
+function renderCalendar(){
+  const container = document.getElementById('calendarRail');
+  if(container && typeof CALENDAR !== 'undefined') {
+    container.innerHTML = CALENDAR.map(c=>`
+    <div class="cal-row">
+      <span class="date mono">${c.date}</span>
+      <h4>${c.title}</h4>
+      <p>${c.desc}</p>
+    </div>`).join('');
+  }
+}
+
+function initials(name){ return name.split(' ').map(p=>p[0]).slice(0,2).join(''); }
+function avatarColor(name){
+  const colors = ["#15803d","#1d4ed8","#b3121f","#a855f7","#b45309","#0e7490"];
+  let h=0; for(const c of name) h+=c.charCodeAt(0);
+  return colors[h % colors.length];
+}
+function statusLabel(s){ return s==='apto' ? 'Apto' : s==='duda' ? 'Duda' : 'Lesionado'; }
+
+function playerCardHTML(p){
+  return `
+  <div class="card player-card">
+    <div class="player-avatar" style="background:${avatarColor(p.name)}">${initials(p.name)}</div>
+    <div>
+      <div class="player-name">${p.name}</div>
+      <div class="player-sub">${typeof flag !== 'undefined' ? flag(p.country) : ''} ${p.country}</div>
+    </div>
+    <div class="player-badges">
+      <span class="tag-pos">${p.position}</span>
+      <span class="status-dot-wrap st-${p.status}"><span class="status-dot"></span>${statusLabel(p.status)}</span>
+    </div>
+  </div>`;
+}
+
+function populatePlayerFilters(){
+  const countrySel = document.getElementById('filterCountry');
+  const posSel = document.getElementById('filterPosition');
+  if(!countrySel || !posSel) return;
+  [...new Set(PLAYERS.map(p=>p.country))].sort().forEach(c=>{
+    countrySel.insertAdjacentHTML('beforeend', `<option value="${c}">${typeof flag !== 'undefined' ? flag(c) : ''} ${c}</option>`);
+  });
+  [...new Set(PLAYERS.map(p=>p.position))].forEach(pos=>{
+    posSel.insertAdjacentHTML('beforeend', `<option value="${pos}">${pos}</option>`);
+  });
+}
+
+function renderPlayers(){
+  const container = document.getElementById('playersGrid');
+  if(!container) return;
+  const q = document.getElementById('playerSearch').value.trim().toLowerCase();
+  const country = document.getElementById('filterCountry').value;
+  const position = document.getElementById('filterPosition').value;
+  const status = document.getElementById('filterStatus').value;
+
+  const filtered = PLAYERS.filter(p=>{
+    return (!q || p.name.toLowerCase().includes(q))
+      && (!country || p.country===country)
+      && (!position || p.position===position)
+      && (!status || p.status===status);
+  });
+
+  document.getElementById('playersCount').textContent = `${filtered.length} jugador${filtered.length===1?'':'es'} encontrados`;
+  container.innerHTML = filtered.map(playerCardHTML).join('')
+    || `<div class="no-results"><div class="big-emoji">🔍</div>No encontramos jugadores con esos filtros.</div>`;
+}
+
+function renderScoreboard(){
+  const container = document.getElementById('scoreboardGrid');
+  if(!container) return;
+  const live = MATCHES.filter(m=>m.status==='live');
+  const others = MATCHES.filter(m=>m.status!=='live').slice(0, Math.max(4, 8) - live.length);
+  const list = [...live, ...others].slice(0,8);
+  if(!list.length){
+    container.innerHTML=`<div class="no-results" style="grid-column:1/-1"><div class="big-emoji">⏳</div>Cargando marcadores en vivo…</div>`;
+    return;
+  }
+  container.innerHTML = list.map(m=>{
+    const fA = m.flagA || flag(m.teamA);
+    const fB = m.flagB || flag(m.teamB);
+    return `
+    <div class="score-panel">
+      <div class="sp-head">
+        <span>${m.group||m.date||'Mundial 2026'} · ${m.stadium||m.city||''}</span>
+        ${m.status==='live' ? `<span class="live-tag"><span class="pulse-sm"></span> EN VIVO</span>` : `<span>${m.status==='pronto' ? 'POR JUGARSE' : 'FINAL'}</span>`}
+      </div>
+      <div class="sp-body">
+        <div class="sp-team"><span class="flag">${fA}</span><span class="tname">${m.teamA}</span></div>
+        <div class="sp-center">
+          <div class="sp-score">${m.status==='pronto' ? (m.time||'--:--') : `${m.scoreA} – ${m.scoreB}`}</div>
+          ${m.status==='live' && m.minute ? `<span class="sp-min">${m.minute}′</span>` : ''}
+        </div>
+        <div class="sp-team"><span class="flag">${fB}</span><span class="tname">${m.teamB}</span></div>
+      </div>
+      <div class="sp-foot"><span>${m.city||m.date||''}</span><span>Mundial 2026</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderTicker(){
+  const container = document.getElementById('tickerTrack');
+  if(!container || !MATCHES.length) return;
+  const items = MATCHES.map(m=>{
+    const fA = m.flagA || flag(m.teamA);
+    const fB = m.flagB || flag(m.teamB);
+    const score = m.status==='pronto' ? (m.time||'') : `${m.scoreA}-${m.scoreB}`;
+    return `<span class="ticker-item">${m.status==='live' ? '<span class="live-chip">LIVE</span>' : ''}<span class="dot"></span>${fA} ${m.teamA} ${score} ${m.teamB} ${fB}</span>`;
+  }).join('');
+  container.innerHTML = items + items;
+}
+
+/* ====================================================================
+   INTERACTIONS
+   ==================================================================== */
+function setupNav(){
+  const navbar = document.getElementById('navbar');
+  if(!navbar) return;
+  window.addEventListener('scroll', ()=>{
+    navbar.classList.toggle('scrolled', window.scrollY > 12);
+  });
+
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  if(navToggle && navLinks) {
+    navToggle.addEventListener('click', ()=> navLinks.classList.toggle('open'));
+    document.querySelectorAll('[data-link]').forEach(link=>{
+      link.addEventListener('click', ()=>{
+        navLinks.classList.remove('open');
+        document.querySelectorAll('[data-link]').forEach(l=>l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+  }
+
+  const sections = ['inicio','mundial','jugadores','noticias','envivo'].map(id=>document.getElementById(id)).filter(Boolean);
+  const links = document.querySelectorAll('[data-link]');
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(l=>l.classList.toggle('active', l.getAttribute('href') === '#'+entry.target.id));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(s=> obs.observe(s));
+}
+
+function setupTheme(){
+  const btn = document.getElementById('themeToggle');
+  if(btn) {
+    btn.addEventListener('click', ()=>{
+      const html = document.documentElement;
+      html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+    });
+  }
+}
+
+function setupSearch(){
+  const toggle = document.getElementById('searchToggle');
+  const pop = document.getElementById('searchPop');
+  const input = document.getElementById('globalSearch');
+  if(toggle && pop && input) {
+    toggle.addEventListener('click', ()=>{
+      pop.classList.toggle('open');
+      if(pop.classList.contains('open')) setTimeout(()=>input.focus(),100);
+    });
+    document.addEventListener('click', (e)=>{
+      if(!pop.contains(e.target) && e.target!==toggle && !toggle.contains(e.target)){
+        pop.classList.remove('open');
+      }
+    });
+    input.addEventListener('input', ()=>{
+      const playerSearch = document.getElementById('playerSearch');
+      if(playerSearch) {
+        playerSearch.value = input.value;
+        renderPlayers();
+        if(input.value.trim().length>0){
+          document.getElementById('jugadores')?.scrollIntoView({behavior:'smooth'});
+        }
+      }
+    });
+  }
+}
+
+function setupPlayerFilters(){
+  ['playerSearch','filterCountry','filterPosition','filterStatus'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) {
+      el.addEventListener('input', renderPlayers);
+      el.addEventListener('change', renderPlayers);
+    }
+  });
+}
+
+function setupReveal(){
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in-view'); obs.unobserve(e.target); } });
+  }, { threshold:0.12 });
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+}
+
+function setupLiveClock(){
+  setInterval(fetchLiveMatches, 60000);
+}
+
+/* ====================================================================
+   INIT
+   ==================================================================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Renderizado estático
+  renderFeaturedNews();
+  renderCatFilters();
+  renderNewsGrid();
+  renderFormatTimeline();
+  renderHostGrid();
+  renderCalendar();
+  populatePlayerFilters();
+  renderPlayers();
+
+  // Setup interacciones
+  setupNav();
+  setupTheme();
+  setupSearch();
+  setupPlayerFilters();
+  setupReveal();
+  setupLiveClock();
+
+  // Carga API o Fallback local
+  fetchLiveMatches();
+});
+</script>
+</body>
+</html>
