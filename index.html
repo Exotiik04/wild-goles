@@ -760,18 +760,20 @@ async function fetchLiveMatches() {
     
     // API-Football devuelve los datos en data.response
     if (data && data.response) {
-      MATCHES = data.response.map(item => ({
-        teamA: item.teams.home.name,
-        teamB: item.teams.away.name,
-        scoreA: item.goals.home ?? 0,
-        scoreB: item.goals.away ?? 0,
-        status: item.fixture.status.short === '1H' || item.fixture.status.short === '2H' ? 'live' : 
-                (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
-        minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
-        stadium: item.fixture.venue.name || "Por definir",
-        city: item.fixture.venue.city || "",
-        date: new Date(item.fixture.date).toLocaleDateString()
-      }));
+      MATCHES = data.response
+        .filter(item => item.league.id === 1) // <--- ESTE ES EL FILTRO CLAVE
+        .map(item => ({
+          teamA: item.teams.home.name,
+          teamB: item.teams.away.name,
+          scoreA: item.goals.home ?? 0,
+          scoreB: item.goals.away ?? 0,
+          status: (item.fixture.status.short === '1H' || item.fixture.status.short === '2H') ? 'live' : 
+                  (item.fixture.status.short === 'FT' ? 'finalizado' : 'pronto'),
+          minute: item.fixture.status.elapsed ? item.fixture.status.elapsed + "'" : '',
+          stadium: item.fixture.venue.name || "Por definir",
+          city: item.fixture.venue.city || "",
+          date: new Date(item.fixture.date).toLocaleDateString()
+        }));
     }
   } catch (err) {
     console.warn("No se pudo conectar a la API o no hay partidos del Mundial hoy. Usando datos de prueba.");
