@@ -7,7 +7,9 @@ exports.handler = async (event, context) => {
   // live=all traerá solo los partidos en juego. 
   // Prueba quitando el parámetro de liga o usando una fecha fija
 // Probar con: /fixtures?season=2026&league=1
-const url = `https://v3.football.api-sports.io/fixtures?league=5`;
+// netlify/functions/get-matches.js
+// league=2 es el ID para la Champions League
+const url = `https://v3.football.api-sports.io/fixtures?league=2&season=2025`;
 
   const headers = {
     "Content-Type": "application/json",
