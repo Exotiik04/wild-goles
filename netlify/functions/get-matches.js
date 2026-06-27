@@ -9,8 +9,8 @@ exports.handler = async (event, context) => {
 // Probar con: /fixtures?season=2026&league=1
 // netlify/functions/get-matches.js
 // league=2 es el ID para la Champions League
-const url = `https://v3.football.api-sports.io/fixtures?league=2&season=2025`;
-
+const url = `https://v3.football.api-sports.io/fixtures?date=2026-06-27`;
+  
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
