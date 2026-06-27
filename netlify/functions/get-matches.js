@@ -2,7 +2,7 @@
 exports.handler = async (event, context) => {
   const API_KEY = "2bff4bf63c3f2648c65b3a653636195a";
   // Endpoint para partidos de hoy (puedes cambiarlo por 'live=all' para solo en vivo)
-  const url = `https://v3.football.api-sports.io/fixtures?league=1&season=2026&live=all`;
+ const url = `https://v3.football.api-sports.io/fixtures?league=1&season=2026&live=all`;
 
   try {
     const response = await fetch(url, {
